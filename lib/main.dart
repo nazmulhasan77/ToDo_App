@@ -15,37 +15,23 @@ class TodoApp extends StatelessWidget {
   }
 }
 
-class Todo {
-  String title;
-  DateTime dateTime;
-
-  Todo({
-    required this.title,
-    required this.dateTime,
-  });
-}
-
 class TodoListScreen extends StatefulWidget {
   @override
   _TodoListScreenState createState() => _TodoListScreenState();
 }
 
 class _TodoListScreenState extends State<TodoListScreen> {
-  List<Todo> todos = [];
+  List<String> todos = [];
 
   TextEditingController _controller = TextEditingController();
   TextEditingController _editController = TextEditingController();
-  TextEditingController _dateTimeController = TextEditingController();
   bool isEditing = false;
   int editingIndex = -1;
 
   void _addTodo() {
     setState(() {
       if (_controller.text.isNotEmpty) {
-        todos.add(Todo(
-          title: _controller.text,
-          dateTime: DateTime.now(),
-        ));
+        todos.add(_controller.text);
         _controller.clear();
       }
     });
@@ -61,13 +47,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
     setState(() {
       isEditing = true;
       editingIndex = index;
-      _editController.text = todos[index].title;
+      _editController.text = todos[index];
     });
   }
 
   void _saveTodo() {
     setState(() {
-      todos[editingIndex].title = _editController.text;
+      todos[editingIndex] = _editController.text;
       isEditing = false;
       editingIndex = -1;
       _editController.clear();
@@ -98,33 +84,15 @@ class _TodoListScreenState extends State<TodoListScreen> {
           SizedBox(height: 10),
           ElevatedButton(
             onPressed: () {
-              showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime.now(),
-                lastDate: DateTime(2100),
-              ).then((pickedDate) {
-                if (pickedDate != null) {
-                  showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  ).then((pickedTime) {
-                    if (pickedTime != null) {
-                      setState(() {
-                        _dateTimeController.text =
-                            '$pickedDate ${pickedTime.format(context)}';
-                      });
-                    }
-                  });
-                }
-              });
+              if (isEditing) {
+                _saveTodo();
+              } else {
+                _addTodo();
+              }
             },
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-            ),
-            child: Text('Set Date & Time'),
+            child: Text(isEditing ? 'Save' : 'Add'),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
               itemCount: todos.length,
@@ -137,19 +105,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             hintText: 'Modify your todo',
                           ),
                         )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(todos[index].title),
-                            Text(
-                              'Date & Time: ${todos[index].dateTime}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
+                      : Text(todos[index]),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
